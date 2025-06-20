@@ -1,7 +1,6 @@
 import sys
 import argparse
 import locale
-from typing import BinaryIO
 
 def count_bytes(file_str):
     try:
