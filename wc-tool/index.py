@@ -56,6 +56,7 @@ def print_counts(file_str, file_name, show_bytes, show_lines, show_words, show_c
         char_count = count_characters(file_str)
         if char_count is not None:
             print(f"{char_count} {file_name}")
+            
     else:
         line_count = count_lines(file_str)
         word_count = count_words(file_str)
@@ -80,25 +81,28 @@ def main():
         required=False,
         help="The number of bytes in each input file is written to the standard output.",
     )
+    
     parser.add_argument(
         "-l",
         action="store_true",
         required=False,
         help="The number of lines in each input file is written to the standard output.",
     )
+    
     parser.add_argument(
         "-w",
         action="store_true",
         required=False,
         help="The number of words in each input file is written to the standard output.",
     )
+    
     parser.add_argument(
         "-m",
         action="store_true",
         required=False,
         help="The number of characters in each input file is written to the standard output.",
     )
-
+    
     parser.add_argument(
         "file",
         help="File name. If no files are specified, the standard input is used and no file name is displayed.",
@@ -115,7 +119,6 @@ def main():
                 with open(file, 'rb') as f:
                     content_bytes = f.read()
                     print_counts(content_bytes, file, args.c, args.l, args.w, args.m)
-                    
             except FileNotFoundError:
                 print(f"File '{file}' not found.")
             except IsADirectoryError:
