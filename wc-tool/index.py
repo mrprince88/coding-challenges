@@ -1,57 +1,76 @@
 import sys
 import argparse
 import locale
+from typing import BinaryIO
 
-def count_bytes(file_path):
+def count_bytes(file_str):
     try:
-        with open(file_path, 'rb') as file:
-            content = file.read()
-            return len(content)
-    except FileNotFoundError:
-        print(f"Error: {file_path} not found.")
-        return None
+        byte_count = len(file_str)
+        return byte_count
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while counting bytes: {e}")
         return None
 
-def count_lines(file_path):
+def count_lines(file_str):
     try:
-        with open(file_path, 'r') as file:
-            line_count = sum(1 for _ in file)
-            return line_count
-    except FileNotFoundError:
-        print(f"Error: {file_path} not found.")
-        return None
+        content_bytes = file_str.splitlines()
+        line_count = sum(1 for _ in content_bytes)
+        return line_count
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while counting lines: {e}")
         return None
 
-def count_words(file_path):
+def count_words(file_str):
     try:
-        with open(file_path, 'r') as file:
-            content = file.read()
-            word_count = len(content.split())
-            return word_count
-    except FileNotFoundError:
-        print(f"Error: {file_path} not found.")
-        return None
+        word_count = len(file_str.split())
+        return word_count
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while counting words: {e}")
         return None
 
-def count_characters(file_path):
+def count_characters(file_str):
     try:
         preferred_encoding = locale.getpreferredencoding(do_setlocale=False)
-        with open(file_path, 'rb') as file:
-            content_bytes = file.read()
-            content_text = content_bytes.decode(preferred_encoding, errors='replace')
-            return len(content_text)
-    except FileNotFoundError:
-        print(f"Error: {file_path} not found.")
-        return None
+        char_count = len(file_str.decode(preferred_encoding,errors="replace"))
+        return char_count
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while counting characters: {e}")
         return None
+    
+def print_counts(file_str, file_name, show_bytes, show_lines, show_words, show_characters):
+    if show_bytes:
+        byte_count = count_bytes(file_str)
+        if byte_count is not None:
+            print(f"{byte_count} {file_name}")
+    
+    elif show_lines:
+        line_count = count_lines(file_str)
+        if line_count is not None:
+            print(f"{line_count} {file_name}")
+    
+    elif show_words:
+        word_count = count_words(file_str)
+        if word_count is not None:
+            print(f"{word_count} {file_name}")
+    
+    elif show_characters:
+        char_count = count_characters(file_str)
+        if char_count is not None:
+            print(f"{char_count} {file_name}")
+    else:
+        line_count = count_lines(file_str)
+        word_count = count_words(file_str)
+        byte_count = count_bytes(file_str)
+        
+        if line_count is not None:
+            print(f"{line_count}", end=" ")
+        if word_count is not None:
+            print(f"{word_count}", end=" ")
+        if byte_count is not None:
+            print(f"{byte_count}", end=" ")
+        
+        print(f"{file_name}")
+    
 
 def main():
     parser=argparse.ArgumentParser(description="WC Tool")
@@ -90,54 +109,22 @@ def main():
     args = parser.parse_args()
 
     file_list = args.file
-
+    
     if file_list:
-        if args.c:
-            for file in file_list:
-                byte_count = count_bytes(file)
-                if byte_count is not None:
-                    print(f"{byte_count} {file}")
-        if args.l:
-            for file in file_list:
-                line_count = count_lines(file)
-                if line_count is not None:
-                    print(f"{line_count} {file}")
-        if args.w:
-            for file in file_list:
-                word_count = count_words(file)
-                if word_count is not None:
-                    print(f"{word_count} {file}")
-        if args.m:
-            for file in file_list:
-                char_count = count_characters(file)
-                if char_count is not None:
-                    print(f"{char_count} {file}")
-        else:
-            for file in file_list:
-                
-                line_count = count_lines(file)
-                if line_count is not None:
-                    print(f"{line_count}",end=" ")
-                word_count = count_words(file)
-
-                if word_count is not None:
-                    print(f"{word_count}",end=" ")
-                byte_count = count_bytes(file)
-
-                if byte_count is not None:
-                    print(f"{byte_count}",end=" ")
+        for file in file_list:
+            try:
+                with open(file, 'rb') as f:
+                    content_bytes = f.read()
+                    print_counts(content_bytes, file, args.c, args.l, args.w, args.m)
                     
-                print(f"{file}")
+            except FileNotFoundError:
+                print(f"File '{file}' not found.")
+            except IsADirectoryError:
+                print(f"'{file}' is a directory, not a file.")
     else:
-        if args.c:
-            byte_count = count_bytes(sys.stdin)
-            if byte_count is not None:
-                print(f"{byte_count} <stdin>")
-        if args.l:
-            line_count = count_lines(sys.stdin)
-            if line_count is not None:
-                print(f"{line_count} <stdin>")
-
+        content_bytes = sys.stdin.buffer.read()
+        print_counts(content_bytes, "", args.c, args.l, args.w, args.m)
+            
 if __name__ == "__main__":
     main()
 
